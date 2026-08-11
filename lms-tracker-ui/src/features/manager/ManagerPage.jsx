@@ -6,12 +6,16 @@ import { SkillMatchPanel } from '../skillMatch/SkillMatchPanel'
 import { PaginationControls } from '../../components/PaginationControls'
 import { PagerSummary } from '../../components/PagerSummary'
 import { Modal } from '../../components/Modal'
+import { SortableHeader } from '../../components/SortableHeader'
 
 export function ManagerPage({
   departments,
   teams,
   pagedTeamsDirectory,
   onTeamsDirectoryPageChange,
+  teamsDirectorySortKey,
+  teamsDirectorySortDirection,
+  onTeamsDirectorySort,
   learners,
   allCourses,
   dashboard,
@@ -46,6 +50,9 @@ export function ManagerPage({
   onCreateAssignment,
   pagedManagerAssignments,
   setManagerAssignmentPage,
+  managerAssignmentSortKey,
+  managerAssignmentSortDirection,
+  onManagerAssignmentSort,
   progressEdits,
   setProgressEdits,
   onSaveProgress,
@@ -54,6 +61,9 @@ export function ManagerPage({
   mandatoryComplianceRows,
   pagedMandatoryComplianceRows,
   setMandatoryGapPage,
+  mandatoryGapSortKey,
+  mandatoryGapSortDirection,
+  onMandatoryGapSort,
   skillMatchRows,
   skillMatchLoading,
   onAnalyzeSkillMatch,
@@ -257,16 +267,16 @@ export function ManagerPage({
           <table>
             <thead>
               <tr>
-                <th>{t('common.empCode')}</th>
-                <th>{t('common.learner')}</th>
-                <th>{t('common.department')}</th>
-                <th>{t('common.team')}</th>
-                <th>{t('common.course')}</th>
-                <th>{t('common.access')}</th>
-                <th>{t('common.due')}</th>
+                <SortableHeader label={t('common.empCode')} sortKey="employeeCode" currentSortKey={managerAssignmentSortKey} currentSortDirection={managerAssignmentSortDirection} onSort={onManagerAssignmentSort} />
+                <SortableHeader label={t('common.learner')} sortKey="learnerName" currentSortKey={managerAssignmentSortKey} currentSortDirection={managerAssignmentSortDirection} onSort={onManagerAssignmentSort} />
+                <SortableHeader label={t('common.department')} sortKey="departmentName" currentSortKey={managerAssignmentSortKey} currentSortDirection={managerAssignmentSortDirection} onSort={onManagerAssignmentSort} />
+                <SortableHeader label={t('common.team')} sortKey="teamName" currentSortKey={managerAssignmentSortKey} currentSortDirection={managerAssignmentSortDirection} onSort={onManagerAssignmentSort} />
+                <SortableHeader label={t('common.course')} sortKey="courseTitle" currentSortKey={managerAssignmentSortKey} currentSortDirection={managerAssignmentSortDirection} onSort={onManagerAssignmentSort} />
+                <SortableHeader label={t('common.access')} sortKey="accessType" currentSortKey={managerAssignmentSortKey} currentSortDirection={managerAssignmentSortDirection} onSort={onManagerAssignmentSort} />
+                <SortableHeader label={t('common.due')} sortKey="dueDate" currentSortKey={managerAssignmentSortKey} currentSortDirection={managerAssignmentSortDirection} onSort={onManagerAssignmentSort} />
                 <th>{t('common.launch')}</th>
-                <th>{t('common.progress')}</th>
-                <th>{t('common.status')}</th>
+                <SortableHeader label={t('common.progress')} sortKey="progressPercent" currentSortKey={managerAssignmentSortKey} currentSortDirection={managerAssignmentSortDirection} onSort={onManagerAssignmentSort} />
+                <SortableHeader label={t('common.status')} sortKey="status" currentSortKey={managerAssignmentSortKey} currentSortDirection={managerAssignmentSortDirection} onSort={onManagerAssignmentSort} />
               </tr>
             </thead>
             <tbody>
@@ -332,12 +342,12 @@ export function ManagerPage({
               <table>
                 <thead>
                   <tr>
-                    <th>{t('common.empCode')}</th>
-                    <th>{t('common.employee')}</th>
-                    <th>{t('common.department')}</th>
-                    <th>{t('common.team')}</th>
-                    <th>{t('common.pendingCount')}</th>
-                    <th>{t('common.pendingCourses')}</th>
+                    <SortableHeader label={t('common.empCode')} sortKey="employeeCode" currentSortKey={mandatoryGapSortKey} currentSortDirection={mandatoryGapSortDirection} onSort={onMandatoryGapSort} />
+                    <SortableHeader label={t('common.employee')} sortKey="learnerName" currentSortKey={mandatoryGapSortKey} currentSortDirection={mandatoryGapSortDirection} onSort={onMandatoryGapSort} />
+                    <SortableHeader label={t('common.department')} sortKey="departmentName" currentSortKey={mandatoryGapSortKey} currentSortDirection={mandatoryGapSortDirection} onSort={onMandatoryGapSort} />
+                    <SortableHeader label={t('common.team')} sortKey="teamName" currentSortKey={mandatoryGapSortKey} currentSortDirection={mandatoryGapSortDirection} onSort={onMandatoryGapSort} />
+                    <SortableHeader label={t('common.pendingCount')} sortKey="pendingMandatoryCourses" currentSortKey={mandatoryGapSortKey} currentSortDirection={mandatoryGapSortDirection} onSort={onMandatoryGapSort} />
+                    <SortableHeader label={t('common.pendingCourses')} sortKey="pendingCourseTitles" currentSortKey={mandatoryGapSortKey} currentSortDirection={mandatoryGapSortDirection} onSort={onMandatoryGapSort} />
                   </tr>
                 </thead>
                 <tbody>
@@ -369,10 +379,10 @@ export function ManagerPage({
           <table>
             <thead>
               <tr>
-                <th>{t('common.name')}</th>
-                <th>{t('common.department')}</th>
-                <th>{t('common.managerName')}</th>
-                <th>{t('common.managerEmail')}</th>
+                <SortableHeader label={t('common.name')} sortKey="name" currentSortKey={teamsDirectorySortKey} currentSortDirection={teamsDirectorySortDirection} onSort={onTeamsDirectorySort} />
+                <SortableHeader label={t('common.department')} sortKey="department" currentSortKey={teamsDirectorySortKey} currentSortDirection={teamsDirectorySortDirection} onSort={onTeamsDirectorySort} />
+                <SortableHeader label={t('common.managerName')} sortKey="managerName" currentSortKey={teamsDirectorySortKey} currentSortDirection={teamsDirectorySortDirection} onSort={onTeamsDirectorySort} />
+                <SortableHeader label={t('common.managerEmail')} sortKey="managerEmail" currentSortKey={teamsDirectorySortKey} currentSortDirection={teamsDirectorySortDirection} onSort={onTeamsDirectorySort} />
               </tr>
             </thead>
             <tbody>

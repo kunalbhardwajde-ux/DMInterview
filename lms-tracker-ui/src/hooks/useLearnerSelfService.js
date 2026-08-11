@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiRequest, apiRequestPage } from '../apiClient'
+import { useSortState } from '../utils/sorting'
 import { getErrorMessage } from '../utils/errorHandling'
 
 const ASSIGNMENTS_PAGE_SIZE = 8
@@ -18,13 +19,24 @@ export function useLearnerSelfService() {
   const [assignmentsPage, setAssignmentsPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const assignmentsSort = useSortState()
 
-  const loadAssignmentsPage = useCallback(async (page) => {
-    const { items, totalCount } = await apiRequestPage('/assignments/mine', { page, pageSize: ASSIGNMENTS_PAGE_SIZE })
+  // Sorting here is genuine server-side sorting (AssignmentsModule.cs's /mine sortBy/sortDir),
+  // not a client sort of whatever page happens to already be loaded - each sort click re-fetches
+  // the correctly-ordered page 1 from the server.
+  const loadAssignmentsPage = useCallback(async (page, sortKey = assignmentsSort.sortKey, sortDirection = assignmentsSort.sortDirection) => {
+    const path = sortKey ? `/assignments/mine?sortBy=${encodeURIComponent(sortKey)}&sortDir=${encodeURIComponent(sortDirection)}` : '/assignments/mine'
+    const { items, totalCount } = await apiRequestPage(path, { page, pageSize: ASSIGNMENTS_PAGE_SIZE })
     setAssignments(items)
     setAssignmentsTotalCount(totalCount)
     setAssignmentsPage(page)
-  }, [])
+  }, [assignmentsSort.sortKey, assignmentsSort.sortDirection])
+
+  const requestAssignmentsSort = useCallback((key) => {
+    assignmentsSort.requestSort(key)
+    const nextDirection = assignmentsSort.sortKey === key && assignmentsSort.sortDirection === 'asc' ? 'desc' : 'asc'
+    void loadAssignmentsPage(1, key, nextDirection)
+  }, [assignmentsSort, loadAssignmentsPage])
 
   useEffect(() => {
     let isMounted = true
@@ -69,5 +81,8 @@ export function useLearnerSelfService() {
     loading,
     error,
     onAssignmentsPageChange: loadAssignmentsPage,
+    assignmentsSortKey: assignmentsSort.sortKey,
+    assignmentsSortDirection: assignmentsSort.sortDirection,
+    onAssignmentsSort: requestAssignmentsSort,
   }
 }

@@ -59,4 +59,37 @@ describe('SkillMatchPanel', () => {
 
     expect(onAnalyze).toHaveBeenCalledWith('cloud, security')
   })
+
+  it('defaults to matchScore descending, then re-sorts client-side when a column header is clicked', async () => {
+    const user = userEvent.setup()
+    const multiRows = [
+      { ...rows[0], learnerId: 'learner-2', learnerName: 'Bob Stone', employeeCode: 'EMP002', matchScore: 20 },
+      { ...rows[0], learnerId: 'learner-1', learnerName: 'Ada Lovelace', employeeCode: 'EMP001', matchScore: 14 },
+      { ...rows[0], learnerId: 'learner-3', learnerName: 'Charlie Kim', employeeCode: 'EMP003', matchScore: 5 },
+    ]
+
+    render(<SkillMatchPanel rows={multiRows} onAnalyze={() => {}} />)
+
+    expect(screen.getAllByText(/Lovelace|Stone|Kim/).map((el) => el.textContent)).toEqual([
+      'Bob Stone',
+      'Ada Lovelace',
+      'Charlie Kim',
+    ])
+
+    await user.click(screen.getByRole('button', { name: 'Employee' }))
+
+    expect(screen.getAllByText(/Lovelace|Stone|Kim/).map((el) => el.textContent)).toEqual([
+      'Ada Lovelace',
+      'Bob Stone',
+      'Charlie Kim',
+    ])
+
+    await user.click(screen.getByRole('button', { name: 'Employee' }))
+
+    expect(screen.getAllByText(/Lovelace|Stone|Kim/).map((el) => el.textContent)).toEqual([
+      'Charlie Kim',
+      'Bob Stone',
+      'Ada Lovelace',
+    ])
+  })
 })

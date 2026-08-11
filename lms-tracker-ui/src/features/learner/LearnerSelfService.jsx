@@ -3,13 +3,23 @@ import { useTranslation } from 'react-i18next'
 import { useLearnerSelfService } from '../../hooks/useLearnerSelfService'
 import { PaginationControls } from '../../components/PaginationControls'
 import { PagerSummary } from '../../components/PagerSummary'
+import { SortableHeader } from '../../components/SortableHeader'
 
 // The real, server-authenticated Learner experience - distinct from LearnerPortal, which is the
 // Manager-facing simulation of "what would a learner/team-manager see" (still useful as a demo,
 // but it trusts whatever employee code was typed into it; this page trusts only the JWT).
 export function LearnerSelfService({ onSignOut }) {
   const { t } = useTranslation()
-  const { profile, pagedAssignments, loading, error, onAssignmentsPageChange } = useLearnerSelfService()
+  const {
+    profile,
+    pagedAssignments,
+    loading,
+    error,
+    onAssignmentsPageChange,
+    assignmentsSortKey,
+    assignmentsSortDirection,
+    onAssignmentsSort,
+  } = useLearnerSelfService()
 
   return (
     <main className="page learner-page">
@@ -46,12 +56,12 @@ export function LearnerSelfService({ onSignOut }) {
               <table>
                 <thead>
                   <tr>
-                    <th>{t('common.course')}</th>
-                    <th>{t('common.provider')}</th>
-                    <th>{t('common.access')}</th>
-                    <th>{t('common.due')}</th>
-                    <th>{t('common.progress')}</th>
-                    <th>{t('common.status')}</th>
+                    <SortableHeader label={t('common.course')} sortKey="courseTitle" currentSortKey={assignmentsSortKey} currentSortDirection={assignmentsSortDirection} onSort={onAssignmentsSort} />
+                    <SortableHeader label={t('common.provider')} sortKey="provider" currentSortKey={assignmentsSortKey} currentSortDirection={assignmentsSortDirection} onSort={onAssignmentsSort} />
+                    <SortableHeader label={t('common.access')} sortKey="accessType" currentSortKey={assignmentsSortKey} currentSortDirection={assignmentsSortDirection} onSort={onAssignmentsSort} />
+                    <SortableHeader label={t('common.due')} sortKey="dueDate" currentSortKey={assignmentsSortKey} currentSortDirection={assignmentsSortDirection} onSort={onAssignmentsSort} />
+                    <SortableHeader label={t('common.progress')} sortKey="progressPercent" currentSortKey={assignmentsSortKey} currentSortDirection={assignmentsSortDirection} onSort={onAssignmentsSort} />
+                    <SortableHeader label={t('common.status')} sortKey="status" currentSortKey={assignmentsSortKey} currentSortDirection={assignmentsSortDirection} onSort={onAssignmentsSort} />
                     <th>{t('common.launch')}</th>
                   </tr>
                 </thead>

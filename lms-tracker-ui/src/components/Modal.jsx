@@ -6,10 +6,19 @@ export function Modal({ title, onClose, children }) {
   const titleId = useId()
   const dialogRef = useRef(null)
 
+  // Focus the first focusable element once, when the modal opens. Deliberately its own effect
+  // with an empty dependency array - it only touches dialogRef (a ref, exempt from
+  // exhaustive-deps) and nothing reactive, so it never needs to re-run. It must NOT share the
+  // effect below: onClose is commonly passed as a fresh inline arrow function by callers, so if
+  // this ran on every onClose identity change, it would steal focus back to the first field on
+  // every re-render of the modal's own form - i.e. on every keystroke.
+  useEffect(() => {
+    const focusable = dialogRef.current?.querySelector(FOCUSABLE_SELECTOR)
+    focusable?.focus()
+  }, [])
+
   useEffect(() => {
     const dialog = dialogRef.current
-    const focusable = dialog?.querySelector(FOCUSABLE_SELECTOR)
-    focusable?.focus()
 
     function handleKeyDown(event) {
       if (event.key === 'Escape') {

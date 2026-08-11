@@ -135,6 +135,9 @@ function App() {
           teams={managerData.teams}
           pagedTeamsDirectory={managerData.pagedTeamsDirectory}
           onTeamsDirectoryPageChange={managerData.onTeamsDirectoryPageChange}
+          teamsDirectorySortKey={managerData.teamsDirectorySortKey}
+          teamsDirectorySortDirection={managerData.teamsDirectorySortDirection}
+          onTeamsDirectorySort={managerData.onTeamsDirectorySort}
           learners={managerData.learners}
           allCourses={managerData.allCourses}
           dashboard={managerData.dashboard}
@@ -169,6 +172,9 @@ function App() {
           onCreateAssignment={managerData.createAssignment}
           pagedManagerAssignments={managerData.pagedManagerAssignments}
           setManagerAssignmentPage={managerData.setManagerAssignmentPage}
+          managerAssignmentSortKey={managerData.managerAssignmentSortKey}
+          managerAssignmentSortDirection={managerData.managerAssignmentSortDirection}
+          onManagerAssignmentSort={managerData.requestManagerAssignmentSort}
           progressEdits={managerData.progressEdits}
           setProgressEdits={managerData.setProgressEdits}
           onSaveProgress={managerData.saveProgress}
@@ -177,6 +183,9 @@ function App() {
           mandatoryComplianceRows={managerData.mandatoryComplianceRows}
           pagedMandatoryComplianceRows={managerData.pagedMandatoryComplianceRows}
           setMandatoryGapPage={managerData.setMandatoryGapPage}
+          mandatoryGapSortKey={managerData.mandatoryGapSortKey}
+          mandatoryGapSortDirection={managerData.mandatoryGapSortDirection}
+          onMandatoryGapSort={managerData.requestMandatoryGapSort}
           skillMatchRows={managerData.skillMatchRows}
           skillMatchLoading={managerData.skillMatchLoading}
           onAnalyzeSkillMatch={managerData.searchSkillMatch}
@@ -195,10 +204,16 @@ function App() {
             pagedTeamManagerAssignments={learnerPortalData.pagedTeamManagerAssignments}
             teamManagerAssignmentPage={learnerPortalData.teamManagerAssignmentPage}
             onTeamManagerAssignmentPageChange={learnerPortalData.setTeamManagerAssignmentPage}
+            teamManagerAssignmentSortKey={learnerPortalData.teamManagerAssignmentSortKey}
+            teamManagerAssignmentSortDirection={learnerPortalData.teamManagerAssignmentSortDirection}
+            onTeamManagerAssignmentSort={learnerPortalData.requestTeamManagerAssignmentSort}
             teamManagerMandatoryGaps={learnerPortalData.teamManagerMandatoryGaps}
             pagedTeamManagerMandatoryGaps={learnerPortalData.pagedTeamManagerMandatoryGaps}
             teamManagerMandatoryGapsPage={learnerPortalData.teamManagerMandatoryGapsPage}
             onTeamManagerMandatoryGapsPageChange={learnerPortalData.setTeamManagerMandatoryGapsPage}
+            teamManagerMandatoryGapsSortKey={learnerPortalData.teamManagerMandatoryGapsSortKey}
+            teamManagerMandatoryGapsSortDirection={learnerPortalData.teamManagerMandatoryGapsSortDirection}
+            onTeamManagerMandatoryGapsSort={learnerPortalData.requestTeamManagerMandatoryGapsSort}
             onRefreshTeamView={learnerPortalData.loadTeamPersonaData}
             onRefreshUdemy={managerData.syncUdemyProgress}
             onRefreshLinkedIn={managerData.syncLinkedInProgress}
@@ -211,6 +226,9 @@ function App() {
             pagedLearnerAssignments={learnerPortalData.pagedLearnerAssignments}
             learnerAssignmentPage={learnerPortalData.learnerAssignmentPage}
             onLearnerAssignmentPageChange={learnerPortalData.setLearnerAssignmentPage}
+            learnerAssignmentSortKey={learnerPortalData.learnerAssignmentSortKey}
+            learnerAssignmentSortDirection={learnerPortalData.learnerAssignmentSortDirection}
+            onLearnerAssignmentSort={learnerPortalData.requestLearnerAssignmentSort}
           />
         </main>
       )}

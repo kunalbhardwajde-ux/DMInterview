@@ -1,18 +1,40 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { normalizeSkillInput, groupSkillMatchRows } from './skillMatchUtils'
 import { paginate } from '../../utils/pagination'
+import { sortRows, useSortState } from '../../utils/sorting'
 import { PaginationControls } from '../../components/PaginationControls'
 import { PagerSummary } from '../../components/PagerSummary'
+import { SortableHeader } from '../../components/SortableHeader'
+
+const PRIORITY_TIER_RANK = { Low: 0, Medium: 1, High: 2 }
+
+// Sort accessor: every column sorts by its own row field, except priorityTier, which sorts by
+// severity (Low < Medium < High) rather than alphabetically ("High" < "Low" < "Medium").
+function skillMatchSortAccessor(row, key) {
+  return key === 'priorityTier' ? PRIORITY_TIER_RANK[row.priorityTier] ?? -1 : row[key]
+}
 
 export function SkillMatchPanel({ rows, onAnalyze, loading = false }) {
   const { t } = useTranslation()
   const [skillSearchInput, setSkillSearchInput] = useState('cloud, security, ai')
   const [expandedLearnerId, setExpandedLearnerId] = useState('')
   const [page, setPage] = useState(1)
+  // Backend/groupSkillMatchRows already return rows ranked by matchScore desc - default the sort
+  // state to the same key/direction so the table's initial render matches that ranking exactly,
+  // until the user clicks a different column.
+  const { sortKey, sortDirection, requestSort } = useSortState('matchScore', 'desc')
 
   const groupedRows = useMemo(() => groupSkillMatchRows(rows), [rows])
-  const pagedRows = useMemo(() => paginate(groupedRows, page, 10), [groupedRows, page])
+  const sortedRows = useMemo(
+    () => sortRows(groupedRows, sortKey, sortDirection, skillMatchSortAccessor),
+    [groupedRows, sortKey, sortDirection],
+  )
+  const pagedRows = useMemo(() => paginate(sortedRows, page, 10), [sortedRows, page])
+  const handleSort = useCallback((key) => {
+    requestSort(key)
+    setPage(1)
+  }, [requestSort])
 
   function handleAnalyze() {
     onAnalyze(normalizeSkillInput(skillSearchInput))
@@ -52,17 +74,17 @@ export function SkillMatchPanel({ rows, onAnalyze, loading = false }) {
             <table>
               <thead>
                 <tr>
-                  <th>{t('skillMatch.columns.priority')}</th>
-                  <th>{t('skillMatch.columns.score')}</th>
-                  <th>{t('common.empCode')}</th>
-                  <th>{t('common.employee')}</th>
-                  <th>{t('common.department')}</th>
-                  <th>{t('common.team')}</th>
-                  <th>{t('skillMatch.columns.completedCourses')}</th>
-                  <th>{t('skillMatch.columns.matchedCourses')}</th>
-                  <th>{t('skillMatch.columns.matchedSkills')}</th>
-                  <th>{t('skillMatch.columns.missingSkills')}</th>
-                  <th>{t('skillMatch.columns.topMatchedCourses')}</th>
+                  <SortableHeader label={t('skillMatch.columns.priority')} sortKey="priorityTier" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={handleSort} />
+                  <SortableHeader label={t('skillMatch.columns.score')} sortKey="matchScore" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={handleSort} />
+                  <SortableHeader label={t('common.empCode')} sortKey="employeeCode" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={handleSort} />
+                  <SortableHeader label={t('common.employee')} sortKey="learnerName" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={handleSort} />
+                  <SortableHeader label={t('common.department')} sortKey="departmentName" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={handleSort} />
+                  <SortableHeader label={t('common.team')} sortKey="teamName" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={handleSort} />
+                  <SortableHeader label={t('skillMatch.columns.completedCourses')} sortKey="completedCourses" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={handleSort} />
+                  <SortableHeader label={t('skillMatch.columns.matchedCourses')} sortKey="matchedCourses" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={handleSort} />
+                  <SortableHeader label={t('skillMatch.columns.matchedSkills')} sortKey="matchedSkillKeywords" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={handleSort} />
+                  <SortableHeader label={t('skillMatch.columns.missingSkills')} sortKey="missingSkillKeywords" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={handleSort} />
+                  <SortableHeader label={t('skillMatch.columns.topMatchedCourses')} sortKey="topMatchedCourses" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={handleSort} />
                   <th>{t('skillMatch.columns.details')}</th>
                 </tr>
               </thead>

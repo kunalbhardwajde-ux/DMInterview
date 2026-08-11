@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiRequest, apiRequestPage } from '../apiClient'
 import { paginate } from '../utils/pagination'
+import { sortRows, useSortState } from '../utils/sorting'
 import { getErrorMessage, buildQueryString } from '../utils/errorHandling'
 
 const COURSE_PAGE_SIZE = 8
@@ -37,6 +38,7 @@ export function useManagerData({ setError, enabled = true }) {
   const [teamsDirectoryRows, setTeamsDirectoryRows] = useState([])
   const [teamsDirectoryTotalCount, setTeamsDirectoryTotalCount] = useState(0)
   const [teamsDirectoryPage, setTeamsDirectoryPage] = useState(1)
+  const teamsDirectorySort = useSortState()
   const [learners, setLearners] = useState([])
   // Two separate views over the same catalog: `courses` is the current page of the searchable
   // Course Catalog table (server-paginated - see searchCourses), `allCourses` is the full,
@@ -58,6 +60,8 @@ export function useManagerData({ setError, enabled = true }) {
   const [coursePage, setCoursePage] = useState(1)
   const [managerAssignmentPage, setManagerAssignmentPage] = useState(1)
   const [mandatoryGapPage, setMandatoryGapPage] = useState(1)
+  const managerAssignmentSort = useSortState()
+  const mandatoryGapSort = useSortState()
 
   const [modalOpen, setModalOpen] = useState(null)
   const [departmentForm, setDepartmentForm] = useState(INITIAL_DEPARTMENT_FORM)
@@ -124,14 +128,30 @@ export function useManagerData({ setError, enabled = true }) {
       startIndex: (teamsDirectoryPage - 1) * TEAMS_DIRECTORY_PAGE_SIZE,
     }
   }, [teamsDirectoryRows, teamsDirectoryPage, teamsDirectoryTotalCount])
+  const sortedManagerAssignments = useMemo(
+    () => sortRows(assignments, managerAssignmentSort.sortKey, managerAssignmentSort.sortDirection),
+    [assignments, managerAssignmentSort.sortKey, managerAssignmentSort.sortDirection],
+  )
   const pagedManagerAssignments = useMemo(
-    () => paginate(assignments, managerAssignmentPage, 10),
-    [assignments, managerAssignmentPage],
+    () => paginate(sortedManagerAssignments, managerAssignmentPage, 10),
+    [sortedManagerAssignments, managerAssignmentPage],
+  )
+  const sortedMandatoryComplianceRows = useMemo(
+    () => sortRows(mandatoryComplianceRows, mandatoryGapSort.sortKey, mandatoryGapSort.sortDirection),
+    [mandatoryComplianceRows, mandatoryGapSort.sortKey, mandatoryGapSort.sortDirection],
   )
   const pagedMandatoryComplianceRows = useMemo(
-    () => paginate(mandatoryComplianceRows, mandatoryGapPage, 10),
-    [mandatoryComplianceRows, mandatoryGapPage],
+    () => paginate(sortedMandatoryComplianceRows, mandatoryGapPage, 10),
+    [sortedMandatoryComplianceRows, mandatoryGapPage],
   )
+  const requestManagerAssignmentSort = useCallback((key) => {
+    managerAssignmentSort.requestSort(key)
+    setManagerAssignmentPage(1)
+  }, [managerAssignmentSort])
+  const requestMandatoryGapSort = useCallback((key) => {
+    mandatoryGapSort.requestSort(key)
+    setMandatoryGapPage(1)
+  }, [mandatoryGapSort])
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -197,16 +217,26 @@ export function useManagerData({ setError, enabled = true }) {
 
   // Server-paginated Teams Directory table - same apiRequestPage/X-Total-Count contract as the
   // course catalog above, independent of the full, unpaged `teams` list every dropdown uses.
-  const loadTeamsDirectoryPage = useCallback(async (page) => {
+  // Sorting is genuinely server-side too (TeamsModule.cs's sortBy/sortDir), not just a client
+  // sort of whichever page happens to be loaded - the query params are baked into the path since
+  // apiRequestPage only special-cases page/pageSize itself.
+  const loadTeamsDirectoryPage = useCallback(async (page, sortKey = teamsDirectorySort.sortKey, sortDirection = teamsDirectorySort.sortDirection) => {
     try {
-      const { items, totalCount } = await apiRequestPage('/teams', { page, pageSize: TEAMS_DIRECTORY_PAGE_SIZE })
+      const teamsPath = sortKey ? `/teams?sortBy=${encodeURIComponent(sortKey)}&sortDir=${encodeURIComponent(sortDirection)}` : '/teams'
+      const { items, totalCount } = await apiRequestPage(teamsPath, { page, pageSize: TEAMS_DIRECTORY_PAGE_SIZE })
       setTeamsDirectoryRows(items)
       setTeamsDirectoryTotalCount(totalCount)
       setTeamsDirectoryPage(page)
     } catch (error) {
       setError(getErrorMessage(error, t('errors.loadTeamsDirectory')))
     }
-  }, [t, setError])
+  }, [t, setError, teamsDirectorySort.sortKey, teamsDirectorySort.sortDirection])
+
+  const requestTeamsDirectorySort = useCallback((key) => {
+    teamsDirectorySort.requestSort(key)
+    const nextDirection = teamsDirectorySort.sortKey === key && teamsDirectorySort.sortDirection === 'asc' ? 'desc' : 'asc'
+    void loadTeamsDirectoryPage(1, key, nextDirection)
+  }, [teamsDirectorySort, loadTeamsDirectoryPage])
 
   const searchSkillMatch = useCallback(async (normalizedSkills) => {
     if (!normalizedSkills) {
@@ -463,6 +493,9 @@ export function useManagerData({ setError, enabled = true }) {
     teams,
     pagedTeamsDirectory,
     onTeamsDirectoryPageChange: loadTeamsDirectoryPage,
+    teamsDirectorySortKey: teamsDirectorySort.sortKey,
+    teamsDirectorySortDirection: teamsDirectorySort.sortDirection,
+    onTeamsDirectorySort: requestTeamsDirectorySort,
     learners,
     courses,
     allCourses,
@@ -499,9 +532,15 @@ export function useManagerData({ setError, enabled = true }) {
     pagedManagerAssignments,
     managerAssignmentPage,
     setManagerAssignmentPage,
+    managerAssignmentSortKey: managerAssignmentSort.sortKey,
+    managerAssignmentSortDirection: managerAssignmentSort.sortDirection,
+    requestManagerAssignmentSort,
     pagedMandatoryComplianceRows,
     mandatoryGapPage,
     setMandatoryGapPage,
+    mandatoryGapSortKey: mandatoryGapSort.sortKey,
+    mandatoryGapSortDirection: mandatoryGapSort.sortDirection,
+    requestMandatoryGapSort,
     loadDashboardData,
     searchCourses,
     searchSkillMatch,
