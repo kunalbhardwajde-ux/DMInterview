@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+  background: #edf2f7;
+  color: #172133;
+  font-family: 'Space Grotesk', 'Aptos', 'Segoe UI', sans-serif;
+}
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem;
+}
