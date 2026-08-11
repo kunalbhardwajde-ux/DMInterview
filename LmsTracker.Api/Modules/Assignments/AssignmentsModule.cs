@@ -94,7 +94,7 @@ public sealed class AssignmentsModule : IEndpointModule
         // ManagerOnly group.
         var selfServiceGroup = app.MapGroup("/api/assignments").WithTags("Assignments").RequireAuthorization("LearnerOnly");
 
-        selfServiceGroup.MapGet("/mine", async (int? page, int? pageSize, HttpResponse response, ClaimsPrincipal user, LmsDbContext db, CancellationToken ct) =>
+        selfServiceGroup.MapGet("/mine", async (int? page, int? pageSize, string? sortBy, string? sortDir, HttpResponse response, ClaimsPrincipal user, LmsDbContext db, CancellationToken ct) =>
         {
             var learnerId = user.GetLearnerId();
             if (learnerId is null)
@@ -113,8 +113,21 @@ public sealed class AssignmentsModule : IEndpointModule
                 from department in deptJoin.DefaultIfEmpty()
                 select new { assignment, learner, course, team, department };
 
+            // sortBy is optional - unrecognized or omitted falls back to the original, always-on
+            // "most recently assigned first" ordering, so existing callers see no behavior change.
+            var descending = string.Equals(sortDir, "desc", StringComparison.OrdinalIgnoreCase);
+            query = sortBy?.ToLowerInvariant() switch
+            {
+                "coursetitle" => descending ? query.OrderByDescending(x => x.course.Title) : query.OrderBy(x => x.course.Title),
+                "provider" => descending ? query.OrderByDescending(x => x.course.Provider) : query.OrderBy(x => x.course.Provider),
+                "accesstype" => descending ? query.OrderByDescending(x => x.assignment.AccessType) : query.OrderBy(x => x.assignment.AccessType),
+                "duedate" => descending ? query.OrderByDescending(x => x.assignment.DueDate) : query.OrderBy(x => x.assignment.DueDate),
+                "progresspercent" => descending ? query.OrderByDescending(x => x.assignment.ProgressPercent) : query.OrderBy(x => x.assignment.ProgressPercent),
+                "status" => descending ? query.OrderByDescending(x => x.assignment.Status) : query.OrderBy(x => x.assignment.Status),
+                _ => query.OrderByDescending(x => x.assignment.CreatedAtUtc),
+            };
+
             var projected = query
-                .OrderByDescending(x => x.assignment.CreatedAtUtc)
                 .Select(x => new AssignmentView(
                     x.assignment.Id,
                     x.assignment.LearnerId,

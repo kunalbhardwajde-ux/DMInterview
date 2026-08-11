@@ -2,6 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { PaginationControls } from '../../components/PaginationControls'
 import { PagerSummary } from '../../components/PagerSummary'
+import { SortableHeader } from '../../components/SortableHeader'
 
 export function LearnerPortal({
   learnerPersona,
@@ -15,10 +16,16 @@ export function LearnerPortal({
   pagedTeamManagerAssignments,
   teamManagerAssignmentPage,
   onTeamManagerAssignmentPageChange,
+  teamManagerAssignmentSortKey,
+  teamManagerAssignmentSortDirection,
+  onTeamManagerAssignmentSort,
   teamManagerMandatoryGaps,
   pagedTeamManagerMandatoryGaps,
   teamManagerMandatoryGapsPage,
   onTeamManagerMandatoryGapsPageChange,
+  teamManagerMandatoryGapsSortKey,
+  teamManagerMandatoryGapsSortDirection,
+  onTeamManagerMandatoryGapsSort,
   onRefreshTeamView,
   onRefreshUdemy,
   onRefreshLinkedIn,
@@ -31,6 +38,9 @@ export function LearnerPortal({
   pagedLearnerAssignments,
   learnerAssignmentPage,
   onLearnerAssignmentPageChange,
+  learnerAssignmentSortKey,
+  learnerAssignmentSortDirection,
+  onLearnerAssignmentSort,
 }) {
   const { t } = useTranslation()
 
@@ -118,13 +128,13 @@ export function LearnerPortal({
                   <table>
                     <thead>
                       <tr>
-                        <th>{t('common.empCode')}</th>
-                        <th>{t('common.learner')}</th>
-                        <th>{t('common.course')}</th>
-                        <th>{t('common.provider')}</th>
-                        <th>{t('common.due')}</th>
-                        <th>{t('common.progress')}</th>
-                        <th>{t('common.status')}</th>
+                        <SortableHeader label={t('common.empCode')} sortKey="employeeCode" currentSortKey={teamManagerAssignmentSortKey} currentSortDirection={teamManagerAssignmentSortDirection} onSort={onTeamManagerAssignmentSort} />
+                        <SortableHeader label={t('common.learner')} sortKey="learnerName" currentSortKey={teamManagerAssignmentSortKey} currentSortDirection={teamManagerAssignmentSortDirection} onSort={onTeamManagerAssignmentSort} />
+                        <SortableHeader label={t('common.course')} sortKey="courseTitle" currentSortKey={teamManagerAssignmentSortKey} currentSortDirection={teamManagerAssignmentSortDirection} onSort={onTeamManagerAssignmentSort} />
+                        <SortableHeader label={t('common.provider')} sortKey="provider" currentSortKey={teamManagerAssignmentSortKey} currentSortDirection={teamManagerAssignmentSortDirection} onSort={onTeamManagerAssignmentSort} />
+                        <SortableHeader label={t('common.due')} sortKey="dueDate" currentSortKey={teamManagerAssignmentSortKey} currentSortDirection={teamManagerAssignmentSortDirection} onSort={onTeamManagerAssignmentSort} />
+                        <SortableHeader label={t('common.progress')} sortKey="progressPercent" currentSortKey={teamManagerAssignmentSortKey} currentSortDirection={teamManagerAssignmentSortDirection} onSort={onTeamManagerAssignmentSort} />
+                        <SortableHeader label={t('common.status')} sortKey="status" currentSortKey={teamManagerAssignmentSortKey} currentSortDirection={teamManagerAssignmentSortDirection} onSort={onTeamManagerAssignmentSort} />
                       </tr>
                     </thead>
                     <tbody>
@@ -164,10 +174,10 @@ export function LearnerPortal({
                 <table>
                   <thead>
                     <tr>
-                      <th>{t('common.empCode')}</th>
-                      <th>{t('common.learner')}</th>
-                      <th>{t('common.pendingCount')}</th>
-                      <th>{t('common.pendingCourses')}</th>
+                      <SortableHeader label={t('common.empCode')} sortKey="employeeCode" currentSortKey={teamManagerMandatoryGapsSortKey} currentSortDirection={teamManagerMandatoryGapsSortDirection} onSort={onTeamManagerMandatoryGapsSort} />
+                      <SortableHeader label={t('common.learner')} sortKey="learnerName" currentSortKey={teamManagerMandatoryGapsSortKey} currentSortDirection={teamManagerMandatoryGapsSortDirection} onSort={onTeamManagerMandatoryGapsSort} />
+                      <SortableHeader label={t('common.pendingCount')} sortKey="pendingMandatoryCourses" currentSortKey={teamManagerMandatoryGapsSortKey} currentSortDirection={teamManagerMandatoryGapsSortDirection} onSort={onTeamManagerMandatoryGapsSort} />
+                      <SortableHeader label={t('common.pendingCourses')} sortKey="pendingCourseTitles" currentSortKey={teamManagerMandatoryGapsSortKey} currentSortDirection={teamManagerMandatoryGapsSortDirection} onSort={onTeamManagerMandatoryGapsSort} />
                     </tr>
                   </thead>
                   <tbody>
@@ -248,12 +258,12 @@ export function LearnerPortal({
                     <table>
                       <thead>
                         <tr>
-                          <th>{t('common.course')}</th>
-                          <th>{t('common.provider')}</th>
-                          <th>{t('common.access')}</th>
-                          <th>{t('common.due')}</th>
-                          <th>{t('common.progress')}</th>
-                          <th>{t('common.status')}</th>
+                          <SortableHeader label={t('common.course')} sortKey="courseTitle" currentSortKey={learnerAssignmentSortKey} currentSortDirection={learnerAssignmentSortDirection} onSort={onLearnerAssignmentSort} />
+                          <SortableHeader label={t('common.provider')} sortKey="provider" currentSortKey={learnerAssignmentSortKey} currentSortDirection={learnerAssignmentSortDirection} onSort={onLearnerAssignmentSort} />
+                          <SortableHeader label={t('common.access')} sortKey="accessType" currentSortKey={learnerAssignmentSortKey} currentSortDirection={learnerAssignmentSortDirection} onSort={onLearnerAssignmentSort} />
+                          <SortableHeader label={t('common.due')} sortKey="dueDate" currentSortKey={learnerAssignmentSortKey} currentSortDirection={learnerAssignmentSortDirection} onSort={onLearnerAssignmentSort} />
+                          <SortableHeader label={t('common.progress')} sortKey="progressPercent" currentSortKey={learnerAssignmentSortKey} currentSortDirection={learnerAssignmentSortDirection} onSort={onLearnerAssignmentSort} />
+                          <SortableHeader label={t('common.status')} sortKey="status" currentSortKey={learnerAssignmentSortKey} currentSortDirection={learnerAssignmentSortDirection} onSort={onLearnerAssignmentSort} />
                           <th>{t('common.launch')}</th>
                         </tr>
                       </thead>

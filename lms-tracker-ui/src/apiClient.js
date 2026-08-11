@@ -324,7 +324,7 @@ async function mockRequest(path, options) {
   }
 
   if (method === 'GET' && url.pathname === '/teams') {
-    const rows = sorted(mockDb.teams, (x) => x.name).map((t) => {
+    const rows = mockDb.teams.map((t) => {
       const d = mockDb.departments.find((x) => x.id === t.departmentId)
       return {
         id: t.id,
@@ -336,7 +336,8 @@ async function mockRequest(path, options) {
       }
     })
 
-    return applyOptionalMockPaging(rows, url)
+    const sortedRows = sortMockTeams(rows, url.searchParams.get('sortBy'), url.searchParams.get('sortDir'))
+    return applyOptionalMockPaging(sortedRows, url)
   }
 
   if (method === 'POST' && url.pathname === '/teams') {
@@ -918,6 +919,34 @@ function ok(data, extraHeaders) {
 // assign-course select), supplying either pages the result and reports the pre-paging total via
 // X-Total-Count. Shared by every mock list endpoint that supports paging (currently /courses and
 // /teams) so the clamping/slicing logic exists in exactly one place, not one per endpoint.
+// Mirrors TeamsModule.cs's ApplySort exactly (same sortBy keys, same "desc" flag, same default
+// department-then-name ordering) so mock mode and live mode return identical row order for the
+// same query params.
+function sortMockTeams(rows, sortBy, sortDir) {
+  const descending = (sortDir || '').toLowerCase() === 'desc'
+  const compare = (a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'base' })
+  const byKey = (key) => [...rows].sort((a, b) => (descending ? compare(b[key], a[key]) : compare(a[key], b[key])))
+  const byDepartmentThenName = (direction) =>
+    [...rows].sort((a, b) => {
+      const deptCompare = compare(a.departmentName, b.departmentName) * direction
+      return deptCompare !== 0 ? deptCompare : compare(a.name, b.name) * direction
+    })
+
+  switch ((sortBy || '').toLowerCase()) {
+    case 'name':
+      return byKey('name')
+    case 'managername':
+      return byKey('managerName')
+    case 'manageremail':
+      return byKey('managerEmail')
+    case 'department':
+    case 'departmentname':
+      return byDepartmentThenName(descending ? -1 : 1)
+    default:
+      return byDepartmentThenName(1)
+  }
+}
+
 function applyOptionalMockPaging(rows, url) {
   const pageParam = url.searchParams.get('page')
   const pageSizeParam = url.searchParams.get('pageSize')

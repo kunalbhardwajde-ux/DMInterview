@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiRequest } from '../apiClient'
 import { paginate } from '../utils/pagination'
+import { sortRows, useSortState } from '../utils/sorting'
 import { getErrorMessage } from '../utils/errorHandling'
 
 // Owns the Learner route's two personas: "individual" (an employee looking up their own
@@ -27,6 +28,10 @@ export function useLearnerPortalData({ learners, teams, assignments, setError })
   const [teamManagerAssignmentPage, setTeamManagerAssignmentPage] = useState(1)
   const [teamManagerMandatoryGapsPage, setTeamManagerMandatoryGapsPage] = useState(1)
 
+  const learnerAssignmentSort = useSortState()
+  const teamManagerAssignmentSort = useSortState()
+  const teamManagerMandatoryGapsSort = useSortState()
+
   const learnerAssignments = useMemo(
     () => assignments.filter((assignment) => assignment.learnerId === individualSessionLearnerId),
     [assignments, individualSessionLearnerId],
@@ -42,18 +47,42 @@ export function useLearnerPortalData({ learners, teams, assignments, setError })
     [learners, teamManagerTeamId],
   )
 
+  const sortedLearnerAssignments = useMemo(
+    () => sortRows(learnerAssignments, learnerAssignmentSort.sortKey, learnerAssignmentSort.sortDirection),
+    [learnerAssignments, learnerAssignmentSort.sortKey, learnerAssignmentSort.sortDirection],
+  )
   const pagedLearnerAssignments = useMemo(
-    () => paginate(learnerAssignments, learnerAssignmentPage, 8),
-    [learnerAssignments, learnerAssignmentPage],
+    () => paginate(sortedLearnerAssignments, learnerAssignmentPage, 8),
+    [sortedLearnerAssignments, learnerAssignmentPage],
+  )
+  const sortedTeamManagerAssignments = useMemo(
+    () => sortRows(teamManagerAssignments, teamManagerAssignmentSort.sortKey, teamManagerAssignmentSort.sortDirection),
+    [teamManagerAssignments, teamManagerAssignmentSort.sortKey, teamManagerAssignmentSort.sortDirection],
   )
   const pagedTeamManagerAssignments = useMemo(
-    () => paginate(teamManagerAssignments, teamManagerAssignmentPage, 10),
-    [teamManagerAssignments, teamManagerAssignmentPage],
+    () => paginate(sortedTeamManagerAssignments, teamManagerAssignmentPage, 10),
+    [sortedTeamManagerAssignments, teamManagerAssignmentPage],
+  )
+  const sortedTeamManagerMandatoryGaps = useMemo(
+    () => sortRows(teamManagerMandatoryGaps, teamManagerMandatoryGapsSort.sortKey, teamManagerMandatoryGapsSort.sortDirection),
+    [teamManagerMandatoryGaps, teamManagerMandatoryGapsSort.sortKey, teamManagerMandatoryGapsSort.sortDirection],
   )
   const pagedTeamManagerMandatoryGaps = useMemo(
-    () => paginate(teamManagerMandatoryGaps, teamManagerMandatoryGapsPage, 10),
-    [teamManagerMandatoryGaps, teamManagerMandatoryGapsPage],
+    () => paginate(sortedTeamManagerMandatoryGaps, teamManagerMandatoryGapsPage, 10),
+    [sortedTeamManagerMandatoryGaps, teamManagerMandatoryGapsPage],
   )
+  const requestLearnerAssignmentSort = useCallback((key) => {
+    learnerAssignmentSort.requestSort(key)
+    setLearnerAssignmentPage(1)
+  }, [learnerAssignmentSort])
+  const requestTeamManagerAssignmentSort = useCallback((key) => {
+    teamManagerAssignmentSort.requestSort(key)
+    setTeamManagerAssignmentPage(1)
+  }, [teamManagerAssignmentSort])
+  const requestTeamManagerMandatoryGapsSort = useCallback((key) => {
+    teamManagerMandatoryGapsSort.requestSort(key)
+    setTeamManagerMandatoryGapsPage(1)
+  }, [teamManagerMandatoryGapsSort])
 
   const loadTeamPersonaData = useCallback(async (teamId) => {
     try {
@@ -147,10 +176,16 @@ export function useLearnerPortalData({ learners, teams, assignments, setError })
     pagedTeamManagerAssignments,
     teamManagerAssignmentPage,
     setTeamManagerAssignmentPage,
+    teamManagerAssignmentSortKey: teamManagerAssignmentSort.sortKey,
+    teamManagerAssignmentSortDirection: teamManagerAssignmentSort.sortDirection,
+    requestTeamManagerAssignmentSort,
     teamManagerMandatoryGaps,
     pagedTeamManagerMandatoryGaps,
     teamManagerMandatoryGapsPage,
     setTeamManagerMandatoryGapsPage,
+    teamManagerMandatoryGapsSortKey: teamManagerMandatoryGapsSort.sortKey,
+    teamManagerMandatoryGapsSortDirection: teamManagerMandatoryGapsSort.sortDirection,
+    requestTeamManagerMandatoryGapsSort,
     loadTeamPersonaData,
     individualEmployeeCode,
     setIndividualEmployeeCode,
@@ -161,5 +196,8 @@ export function useLearnerPortalData({ learners, teams, assignments, setError })
     pagedLearnerAssignments,
     learnerAssignmentPage,
     setLearnerAssignmentPage,
+    learnerAssignmentSortKey: learnerAssignmentSort.sortKey,
+    learnerAssignmentSortDirection: learnerAssignmentSort.sortDirection,
+    requestLearnerAssignmentSort,
   }
 }

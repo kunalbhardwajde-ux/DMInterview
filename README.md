@@ -188,7 +188,7 @@ All endpoints below require a bearer token (`Authorization: Bearer <token>`) exc
 - `POST /api/auth/login` — `{ accessCode }` or `{ employeeCode }` (exactly one) → `{ token, expiresAtUtc, role }` (open — this is how you get a token; rate-limited per client IP, see Authentication above)
 - `GET /api/departments`
 - `POST /api/departments`
-- `GET /api/teams?page=&pageSize=`
+- `GET /api/teams?page=&pageSize=&sortBy=&sortDir=` — `sortBy` is one of `name`/`department`/`managerName`/`managerEmail`, `sortDir` is `asc` (default) or `desc`
 - `POST /api/teams`
 - `GET /api/learners?page=&pageSize=`
 - `POST /api/learners`
@@ -199,7 +199,7 @@ All endpoints below require a bearer token (`Authorization: Bearer <token>`) exc
 - `DELETE /api/courses/{courseId}/skill-tags` — manager override for a bad AI-extracted tag (see AI section above)
 - `POST /api/assignments`
 - `GET /api/assignments?page=&pageSize=`
-- `GET /api/assignments/mine?page=&pageSize=` — **Learner** — the caller's own assignments only
+- `GET /api/assignments/mine?page=&pageSize=&sortBy=&sortDir=` — **Learner** — the caller's own assignments only; `sortBy` is one of `courseTitle`/`provider`/`accessType`/`dueDate`/`progressPercent`/`status`
 - `PATCH /api/assignments/{assignmentId}/progress`
 - `GET /api/dashboard`
 - `GET /api/reports/progress`
@@ -210,6 +210,8 @@ All endpoints below require a bearer token (`Authorization: Bearer <token>`) exc
 - `GET /api/integrations/linkedin/status`, `POST /api/integrations/linkedin/sync-progress`
 
 `page`/`pageSize` are optional and backward-compatible on all list endpoints — omit them and you get the full, unbounded list exactly as before; the response sets an `X-Total-Count` header only when paging params are supplied (and `Access-Control-Expose-Headers` is set on the CORS policy specifically so a real cross-origin browser `fetch()` can actually read that header, not just a same-origin one via the Vite dev proxy). The Course Catalog and Teams Directory tables in the UI consume this for real (`apiClient.js`'s `apiRequestPage`, backed by real integration + mock-backend tests on both sides); Assignments and Mandatory Compliance still paginate client-side over a fully-fetched list, which is a fine tradeoff at today's data volume but would need the same treatment if either grew large. The mock backend's own paging/clamping logic (mirroring `PagingHelper.cs`'s contract) is one shared `applyOptionalMockPaging` helper used by every paginated mock endpoint, not copy-pasted per endpoint.
+
+**Column sorting.** Every table in the UI has clickable, sortable column headers (`SortableHeader.jsx`, `aria-sort` + a visible ▲/▼/⇅ indicator). Client-paginated tables (Progress Tracker, Mandatory Gaps, Team Manager views, Skill Match) sort the full underlying array in the browser (`utils/sorting.js`'s `sortRows`/`useSortState`) before paginating, so the sort is always correct across the whole dataset, not just the visible page. The two server-paginated tables — Teams Directory and the Learner's own assignments (`/assignments/mine`) — get genuine server-side sorting instead: `sortBy`/`sortDir` query params reorder the query *before* it's paged (`TeamsModule.cs`/`AssignmentsModule.cs`), because sorting only the current page client-side would silently produce the wrong order once there's more than one page. The mock backend mirrors the real Teams sort exactly (`sortMockTeams` in `apiClient.js`) so mock and live mode behave identically; `/assignments/mine` has no mock handler at all since real Learner sessions are unreachable in mock mode by design.
 
 ## Scope & Tradeoffs
 

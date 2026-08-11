@@ -269,6 +269,85 @@ public sealed class ApiIntegrationTests : IClassFixture<ApiIntegrationTests.Test
     }
 
     [Fact]
+    public async Task ListTeams_WithSortByNameDesc_ReturnsTeamsInDescendingNameOrder()
+    {
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+        var deptResponse = await _client.PostAsJsonAsync("/api/departments", new { name = $"Sort Dept {suffix}", code = $"SR{suffix}" });
+        using var deptJson = await ParseAsync(deptResponse);
+        var departmentId = deptJson.RootElement.GetProperty("data").GetProperty("id").GetString();
+
+        foreach (var name in new[] { $"Alpha {suffix}", $"Zeta {suffix}", $"Mid {suffix}" })
+        {
+            await _client.PostAsJsonAsync("/api/teams", new
+            {
+                name,
+                departmentId,
+                managerName = "Manager",
+                managerEmail = $"manager-{Guid.NewGuid():N}@example.com",
+            });
+        }
+
+        // sortBy/sortDir are genuine server-side ordering (TeamsModule.cs's ApplySort), applied
+        // before the page is sliced - this proves the whole page comes back pre-sorted by the
+        // server rather than the UI faking a sort over whichever page it happened to already have.
+        var response = await _client.GetAsync("/api/teams?sortBy=name&sortDir=desc");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var json = await ParseAsync(response);
+        var names = json.RootElement.GetProperty("data").EnumerateArray()
+            .Select(x => x.GetProperty("name").GetString())
+            .Where(n => n != null && n.Contains(suffix))
+            .ToList();
+
+        Assert.Equal(new[] { $"Zeta {suffix}", $"Mid {suffix}", $"Alpha {suffix}" }, names);
+    }
+
+    [Fact]
+    public async Task LearnerMine_WithSortByProgressAsc_ReturnsAssignmentsInAscendingProgressOrder()
+    {
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+        var (learnerId, employeeCode) = await CreateLearnerAsync(suffix);
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<LmsDbContext>();
+            var courses = Enumerable.Range(1, 3).Select(index => new Course
+            {
+                Id = Guid.NewGuid(),
+                ExternalCourseId = $"mine-sort-{suffix}-{index}",
+                Title = $"Mine Sort Course {suffix} {index}",
+                Provider = "Udemy",
+                LaunchUrl = "https://example.com",
+            }).ToList();
+            db.Courses.AddRange(courses);
+            db.Assignments.AddRange(
+                new Assignment { Id = Guid.NewGuid(), LearnerId = learnerId, CourseId = courses[0].Id, AccessType = AccessType.Permanent, Status = AssignmentStatus.InProgress, ProgressPercent = 80 },
+                new Assignment { Id = Guid.NewGuid(), LearnerId = learnerId, CourseId = courses[1].Id, AccessType = AccessType.Permanent, Status = AssignmentStatus.NotStarted, ProgressPercent = 10 },
+                new Assignment { Id = Guid.NewGuid(), LearnerId = learnerId, CourseId = courses[2].Id, AccessType = AccessType.Permanent, Status = AssignmentStatus.InProgress, ProgressPercent = 45 });
+            await db.SaveChangesAsync();
+        }
+
+        using var learnerClient = _factory.CreateClient();
+        var learnerToken = await LoginAsLearnerAsync(learnerClient, employeeCode);
+        learnerClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", learnerToken);
+
+        var response = await learnerClient.GetAsync("/api/assignments/mine?sortBy=progressPercent&sortDir=asc");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var json = await ParseAsync(response);
+        // New learners are auto-enrolled in starter/mandatory courses (see
+        // LearnerManagementService.AssignStarterCoursesAsync) with 0% progress - filter down to
+        // just the three courses this test created before asserting order, same reasoning as the
+        // suffix-filtering already used above for team/department names.
+        var progressValues = json.RootElement.GetProperty("data").EnumerateArray()
+            .Where(x => x.GetProperty("courseTitle").GetString()!.Contains(suffix))
+            .Select(x => x.GetProperty("progressPercent").GetInt32())
+            .ToList();
+
+        Assert.Equal(new[] { 10, 45, 80 }, progressValues);
+    }
+
+    [Fact]
     public async Task ListCourses_WithPagingParams_ReturnsOnlyOnePageAndSetsTotalCountHeader()
     {
         var suffix = Guid.NewGuid().ToString("N")[..6];
