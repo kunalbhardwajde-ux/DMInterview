@@ -33,6 +33,20 @@ The "Skill-Based Interview Priority" panel (manager view) is the differentiating
 
 This structure is ready for future microservice extraction by moving a module and its contracts into a separate service boundary.
 
+**Module layout** — every feature module is its own folder under `Modules/`, with one deliberate exception: `Health` has no folder because `HealthModule.cs` is the entire module (one endpoint, no supporting service/contracts), so it sits directly under `Modules/` as a single file rather than a folder-of-one.
+
+- `Modules/HealthModule.cs` (the one flat file — see above)
+- `Modules/Auth`
+- `Modules/AuditLog`
+- `Modules/Departments`
+- `Modules/Courses`
+- `Modules/Teams`
+- `Modules/Learners`
+- `Modules/Assignments`
+- `Modules/Dashboard`
+- `Modules/Reports`
+- `Modules/Integrations`
+
 ## Authentication
 
 Every endpoint except `GET /api/health` and `POST /api/auth/login` requires a JWT bearer token — an unauthenticated request gets a real `401`, not just a client-side gate. `Modules/Auth/AuthModule.cs` issues tokens for **two roles**:
@@ -146,20 +160,6 @@ Connection string is configured in `appsettings.json` and `appsettings.Developme
 
 The API auto-creates required tables and seeds starter courses on first run.
 
-## Module Layout
-
-- `Modules/Health`
-- `Modules/Auth`
-- `Modules/AuditLog`
-- `Modules/Departments`
-- `Modules/Courses`
-- `Modules/Teams`
-- `Modules/Learners`
-- `Modules/Assignments`
-- `Modules/Dashboard`
-- `Modules/Reports`
-- `Modules/Integrations`
-
 ### 2) Frontend
 
 ```powershell
@@ -179,6 +179,25 @@ Use `lms-tracker-ui/.env` to switch between real backend APIs and in-memory mock
 3. Set `VITE_USE_MOCK_API=false` to use real APIs via `/api`.
 
 Mock mode preserves the same interaction flow: courses search/sync, assignment creation, progress updates, dashboard numbers, mandatory compliance, skill matching, and sync simulation actions. The mock's skill-match logic is kept in sync with `SkillMatchScoringService.cs` in both places that matter: the scoring formula (four signals, each capped at 5, summed to 0-20) and the matching predicate itself (`courseMatchesSkill` mirrors `CourseMatchesSkill`/`TagMatchesSkill` — a course matches a requested skill via its title OR any AI-extracted skill tag, not title alone), so mock and live mode rank learners identically even when a match only shows up through a tag. Mock mode never talks to a real server, so it skips the login gate entirely; real mode (`VITE_USE_MOCK_API=false`) shows a role-toggle sign-in screen first — **Manager**: the `Auth:ManagerAccessCode` value from `appsettings.Development.json` (`manager-dev-access-2026` by default); **Learner**: any seeded employee code (e.g. `EMP1001`) routes to the read-only self-service page instead of the Manager UI.
+
+## Running Tests
+
+```powershell
+cd LmsTracker.Api.Tests
+dotnet test
+```
+
+116 backend tests, entirely in `LmsTracker.Api.Tests`, split across two kinds:
+
+- **Service/unit tests** (e.g. `SkillMatchScoringServiceTests.cs`) — exercise scoring, validation, and provider-client logic directly, no HTTP involved.
+- **HTTP integration tests** (`ApiIntegrationTests.cs`) — real requests through the actual ASP.NET Core pipeline via `WebApplicationFactory<Program>` against an EF Core InMemory database (routing, model binding, JWT auth, and `ApiResultExtensions`' status-code mapping all genuinely execute, not mocked). This is also where the limits of that pipeline showed up in practice: the InMemory provider silently accepts query shapes SQL Server's provider rejects (an `ORDER BY` applied after projecting into a `record` translates fine here but 500s against real SQL Server), which is exactly why this project's practice is to also verify a fix against the live dev server, not stop at green tests.
+
+```powershell
+cd lms-tracker-ui
+npm test
+```
+
+60 frontend tests (Vitest + React Testing Library) across 14 files — pure-function unit tests (`utils/sorting.test.js`, `skillMatchUtils.test.js`), component tests that render real DOM and simulate clicks/typing (`Modal.test.jsx`, `SkillMatchPanel.test.jsx`), and a black-box suite against the mock backend itself (`apiClient.mock.test.js`) that exercises `apiRequest`/`apiRequestPage` the same way the UI does, including a regression test for the exact "course matches via an AI-extracted tag, not its title" case described above.
 
 ## API Endpoints (MVP)
 
@@ -226,7 +245,7 @@ Known, still-open gaps (found by review, not yet fixed):
 - **No per-manager identity.** Manager access is still a single shared credential — the audit log (see above) can distinguish one login *session* from another via the token's `jti`, but not one *person* from another. Closing this needs real per-manager accounts, a materially bigger feature than everything else in this list combined.
 - **The live Anthropic API call is never exercised in this environment**, because no key is configured here — everything around it (extraction pipeline, confidence gating, durable queue, UI, fallback path) is real and tested against stubs, but the actual model call itself isn't. Not fixable without a credential this sandbox doesn't have.
 - **No accuracy-evaluation harness** for AI-extracted skill tags against a labeled ground-truth set — there's no such set to build one against yet.
-- **`useManagerData.js` (~520 lines) and `ManagerPage.jsx` (~540 lines) are large.** Each owns one coherent concern (all Manager data-loading; all Manager-page rendering) and both have real test coverage across their full surface, so this is a "worth splitting eventually" note, not a correctness problem — but it's the same shape of complaint `App.jsx` used to have before it was split, just relocated. Deliberately not touched yet: splitting either further right now is a real-risk refactor to well-tested code for a proportionally small improvement, versus the smaller, cheaper fixes elsewhere in this list.
+- **`useManagerData.js` (~560 lines) and `ManagerPage.jsx` (~550 lines) are large.** Each owns one coherent concern (all Manager data-loading; all Manager-page rendering) and both have real test coverage across their full surface, so this is a "worth splitting eventually" note, not a correctness problem — but it's the same shape of complaint `App.jsx` used to have before it was split, just relocated. Both grew again with the column-sorting feature (sort state, request handlers, and `SortableHeader` wiring for every table), which is more evidence for splitting them, not less. Deliberately not touched yet: splitting either further right now is a real-risk refactor to well-tested code for a proportionally small improvement, versus the smaller, cheaper fixes elsewhere in this list.
 
 ## Notes for Interview
 
