@@ -673,6 +673,25 @@ function buildMandatoryCompliance(url) {
     .sort((a, b) => b.pendingMandatoryCourses - a.pendingMandatoryCourses || a.learnerName.localeCompare(b.learnerName))
 }
 
+// Mirrors SkillMatchScoringService.cs's CourseMatchesSkill/TagMatchesSkill exactly: a course
+// matches a requested skill if the title contains it OR any AI-extracted skill tag matches it
+// (case-insensitive, either substring direction). Title-only matching here would silently miss
+// every course whose skill relevance only shows up via its tags, not its title.
+export function courseMatchesSkill(course, skill) {
+  if ((course.title || '').toLowerCase().includes(skill)) {
+    return true
+  }
+  return (course.skillTags || []).some((tag) => tagMatchesSkill(tag, skill))
+}
+
+function tagMatchesSkill(tag, skill) {
+  if (!tag) {
+    return false
+  }
+  const normalizedTag = tag.toLowerCase()
+  return normalizedTag.includes(skill) || skill.includes(normalizedTag)
+}
+
 function buildSkillMatch(url) {
   const departmentId = url.searchParams.get('departmentId') || ''
   const teamId = url.searchParams.get('teamId') || ''
@@ -711,12 +730,12 @@ function buildSkillMatch(url) {
         .filter(Boolean)
 
       const matchedCourses = completedCourses.filter((course) =>
-        requestedSkills.some((skill) => course.title.toLowerCase().includes(skill)),
+        requestedSkills.some((skill) => courseMatchesSkill(course, skill)),
       )
 
       const matchedCourseTitles = [...new Set(matchedCourses.map((course) => course.title))]
       const matchedSkills = requestedSkills.filter((skill) =>
-        matchedCourseTitles.some((title) => title.toLowerCase().includes(skill)),
+        completedCourses.some((course) => courseMatchesSkill(course, skill)),
       )
       const missingSkills = requestedSkills.filter((skill) => !matchedSkills.includes(skill))
 

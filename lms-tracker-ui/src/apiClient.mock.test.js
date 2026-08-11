@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { apiConfig, apiRequest, apiRequestPage } from './apiClient'
+import { apiConfig, apiRequest, apiRequestPage, courseMatchesSkill } from './apiClient'
 
 describe('apiClient mock backend', () => {
   it('runs in mock mode for this test environment', () => {
@@ -86,5 +86,32 @@ describe('apiClient mock backend', () => {
     expect(secondPage.items.length).toBeGreaterThan(0)
     expect(secondPage.items[0].id).not.toBe(firstPage.items[0].id)
     expect(secondPage.totalCount).toBe(allTeams.length)
+  })
+})
+
+describe('courseMatchesSkill (mock skill-match matching predicate)', () => {
+  // The exact "Container Orchestration with K8s" / "kubernetes" scenario used by
+  // SkillMatchScoringServiceTests.cs's Evaluate_MatchesViaSkillTags_WhenTitleDoesNotContain...
+  // test on the backend. Title-only matching must NOT catch this - proving the tags are what
+  // close the gap, and that this mock now matches the real CourseMatchesSkill/TagMatchesSkill
+  // rule instead of only ever checking the title.
+  const taggedCourse = { title: 'Container Orchestration with K8s', skillTags: ['kubernetes', 'container-orchestration'] }
+
+  it('matches when the skill appears in the title', () => {
+    expect(courseMatchesSkill(taggedCourse, 'orchestration')).toBe(true)
+  })
+
+  it('matches when the skill only appears in an AI-extracted skill tag, not the title', () => {
+    expect(courseMatchesSkill(taggedCourse, 'kubernetes')).toBe(true)
+  })
+
+  it('does not match via tags when the course has none', () => {
+    const untagged = { title: 'Container Orchestration with K8s', skillTags: [] }
+    expect(courseMatchesSkill(untagged, 'kubernetes')).toBe(false)
+  })
+
+  it('matches tags case-insensitively and in either substring direction', () => {
+    expect(courseMatchesSkill({ title: 'Misc', skillTags: ['Kubernetes'] }, 'kubernetes')).toBe(true)
+    expect(courseMatchesSkill({ title: 'Misc', skillTags: ['k8s'] }, 'k8s fundamentals')).toBe(true)
   })
 })
