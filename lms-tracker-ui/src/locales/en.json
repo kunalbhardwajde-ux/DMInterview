@@ -1,0 +1,263 @@
+{
+  "app": {
+    "title": "LMS Pro Suite",
+    "tagline": "Industrial learning operations for managers and learners.",
+    "apiMode": "API Mode: {{mode}}",
+    "apiModeMock": "Mock",
+    "apiModeReal": "Real"
+  },
+  "auth": {
+    "title": "LMS API Access",
+    "hint": "This app talks to a real, authenticated API. Enter the access code to sign in.",
+    "accessCodePlaceholder": "Access code",
+    "employeeCodePlaceholder": "Employee code (e.g., EMP1001)",
+    "roleManager": "Manager",
+    "roleLearner": "Learner",
+    "learnerHint": "Sign in with your employee code to see your assigned courses.",
+    "signIn": "Sign In",
+    "signingIn": "Signing In…",
+    "invalidCode": "Invalid access code.",
+    "signOut": "Sign Out",
+    "sessionExpiringSoon": "Your session will expire in less than {{minutes}} minutes. Save any in-progress work, then sign in again.",
+    "signInAgain": "Sign In Again"
+  },
+  "nav": {
+    "manager": "LMS Manager",
+    "learner": "Learner Portal",
+    "menu": "Menu"
+  },
+  "theme": {
+    "heading": "Theme",
+    "hint": "Hover to preview. Click to apply.",
+    "previewing": "Previewing {{name}}",
+    "sampleLabel": "Background • Cards • Action color",
+    "names": {
+      "atlas": "Atlas Blue",
+      "copper": "Copper Earth",
+      "mint": "Mint Studio"
+    }
+  },
+  "common": {
+    "na": "N/A",
+    "loading": "Loading…",
+    "open": "Open",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "search": "Search",
+    "searching": "Searching…",
+    "empCode": "Emp Code",
+    "employee": "Employee",
+    "learner": "Learner",
+    "name": "Name",
+    "department": "Department",
+    "team": "Team",
+    "managerName": "Manager Name",
+    "managerEmail": "Manager Email",
+    "course": "Course",
+    "provider": "Provider",
+    "access": "Access",
+    "due": "Due",
+    "launch": "Launch",
+    "progress": "Progress",
+    "status": "Status",
+    "completed": "Completed",
+    "completion": "Completion",
+    "pendingCount": "Pending Count",
+    "pendingCourses": "Pending Mandatory Courses"
+  },
+  "enums": {
+    "status": {
+      "NotStarted": "Not Started",
+      "InProgress": "In Progress",
+      "Completed": "Completed"
+    },
+    "accessType": {
+      "Temporary": "Temporary",
+      "Permanent": "Permanent"
+    },
+    "priorityTier": {
+      "Low": "Low",
+      "Medium": "Medium",
+      "High": "High"
+    }
+  },
+  "pagination": {
+    "prev": "Prev",
+    "next": "Next",
+    "ariaLabel": "Pagination",
+    "showing": "Showing {{start}}-{{end}} of {{total}}"
+  },
+  "manager": {
+    "scope": {
+      "title": "Management Scope",
+      "newDepartment": "New Department",
+      "newTeam": "New Team",
+      "newEmployee": "New Employee",
+      "allDepartments": "All departments",
+      "allTeams": "All teams",
+      "resetFilters": "Reset Filters"
+    },
+    "dashboard": {
+      "departments": "Departments",
+      "teams": "Teams",
+      "learners": "Learners",
+      "assignments": "Assignments",
+      "overdue": "Overdue"
+    },
+    "courseCatalog": {
+      "title": "Course Catalog",
+      "description": "Search, review, and mark courses as mandatory.",
+      "searchPlaceholder": "Search course or provider",
+      "mandatory": "Mandatory",
+      "markMandatory": "Mark Mandatory",
+      "removeMandatory": "Remove Mandatory",
+      "aiTagsLabel": "AI-suggested • high confidence",
+      "clearTags": "Clear tags",
+      "clearingTags": "Clearing..."
+    },
+    "assignForm": {
+      "title": "Assign Course",
+      "description": "Assign content to a learner or a whole team.",
+      "selectCourse": "Select course",
+      "individual": "Individual",
+      "team": "Team",
+      "selectLearner": "Select learner",
+      "selectTeam": "Select team",
+      "temporary": "Temporary",
+      "permanent": "Permanent",
+      "assign": "Assign",
+      "assigning": "Assigning…",
+      "teamHint": "This will assign the course to {{count}} learners in the team."
+    },
+    "progressTracker": {
+      "title": "Progress Tracker",
+      "description": "Track progress and sync external learning activity.",
+      "syncUdemy": "Sync Udemy Progress",
+      "syncLinkedIn": "Sync LinkedIn Progress"
+    },
+    "mandatoryGaps": {
+      "title": "Mandatory Course Gaps",
+      "description": "Identify employees with pending mandatory courses.",
+      "hint": "Employees who have not completed all mandatory courses.",
+      "allCompliant": "All employees in this scope are compliant."
+    },
+    "teamsDirectory": {
+      "title": "Teams Directory",
+      "description": "Every team across the organization, independent of the scope filter above."
+    }
+  },
+  "learner": {
+    "personas": {
+      "title": "Learner Personas (Preview)",
+      "description": "A preview of what a learner or team manager would see, built from data already loaded here - not a real sign-in and not a security boundary. A real Learner login (server-verified, scoped to just that learner's own data) is a separate option on the sign-in screen.",
+      "individual": "Individual Persona",
+      "teamManager": "Team Manager Persona"
+    },
+    "teamManager": {
+      "myTeamProgress": "My Team Progress",
+      "refreshTeamView": "Refresh Team View",
+      "teamMembers": "Team Members",
+      "assignments": "Assignments",
+      "inProgress": "In Progress",
+      "notStarted": "Not Started",
+      "teamCourseProgress": "Team Course Progress",
+      "refreshUdemy": "Refresh Udemy",
+      "refreshLinkedIn": "Refresh LinkedIn",
+      "noAssignments": "No assignments for this team yet.",
+      "teamMandatoryGaps": "Team Mandatory Gaps",
+      "gapsHint": "Who has not completed mandatory courses in this team.",
+      "allCompliant": "All team members are compliant."
+    },
+    "individual": {
+      "loginTitle": "Preview an Employee's View",
+      "loginHint": "Enter an employee code to preview their learning data as a manager - this looks up data already loaded into this Manager session and never leaves the browser. It is not a login and proves nothing about identity; a real Learner sign-in is on the main sign-in screen.",
+      "employeeCodePlaceholder": "Employee code (e.g., EMP1001)",
+      "continue": "Continue",
+      "dashboardTitle": "Employee View Preview",
+      "signOut": "Exit Preview",
+      "assignedCoursesTitle": "Assigned Courses",
+      "refreshUdemy": "Refresh Udemy",
+      "refreshLinkedIn": "Refresh LinkedIn",
+      "noCourses": "No courses assigned yet."
+    }
+  },
+  "learnerSelfService": {
+    "dashboardTitle": "My Learning Dashboard",
+    "assignedCoursesTitle": "My Assigned Courses",
+    "noCourses": "No courses assigned yet.",
+    "loadError": "Failed to load your profile or assigned courses."
+  },
+  "skillMatch": {
+    "title": "Skill-Based Interview Priority",
+    "description": "Rank employees for client interviews using completed-course skills.",
+    "inputPlaceholder": "Enter skills: cloud, security, ai",
+    "analyze": "Analyze Skill Match",
+    "analyzing": "Analyzing…",
+    "resetFilter": "Reset Skill Filter",
+    "emptyHint": "Run analysis to generate a prioritized interview shortlist. Employees will still be ranked even with weak exact skill matches.",
+    "more": "More",
+    "less": "Less",
+    "scaleHint": "Score is out of 20 (4 categories, capped at 5 each: matched skills, matched courses, mandatory-course compliance, overall completion depth). Missing Skills shows exactly which requested skills this employee has not demonstrated.",
+    "noGaps": "None — all requested skills matched",
+    "allMatchedSkills": "All Matched Skills:",
+    "allMissingSkills": "All Missing Skills:",
+    "allMatchedCourses": "All Matched Completed Courses:",
+    "scoreBreakdown": "Score Breakdown:",
+    "columns": {
+      "priority": "Priority",
+      "score": "Score",
+      "completedCourses": "Completed Courses",
+      "matchedCourses": "Matched Courses",
+      "matchedSkills": "Matched Skills",
+      "missingSkills": "Missing Skills",
+      "topMatchedCourses": "Top Matched Courses",
+      "details": "Details"
+    }
+  },
+  "modals": {
+    "department": {
+      "title": "Create Department",
+      "namePlaceholder": "Department name",
+      "codePlaceholder": "Department code",
+      "save": "Save Department"
+    },
+    "team": {
+      "title": "Create Team",
+      "namePlaceholder": "Team name",
+      "selectDepartment": "Select department",
+      "managerNamePlaceholder": "Manager name",
+      "managerEmailPlaceholder": "Manager email",
+      "save": "Save Team"
+    },
+    "learner": {
+      "title": "Add Employee",
+      "employeeCodePlaceholder": "Employee code",
+      "namePlaceholder": "Employee name",
+      "emailPlaceholder": "Employee email",
+      "designationPlaceholder": "Designation",
+      "noTeam": "No team",
+      "save": "Save Employee"
+    }
+  },
+  "errors": {
+    "initializeDashboard": "Failed to initialize the dashboard.",
+    "loadDashboard": "Failed to load dashboard data. Ensure backend is running on http://localhost:5000.",
+    "enterSkillKeyword": "Enter at least one skill keyword (example: cloud, security, ai).",
+    "fetchSkillMatch": "Failed to fetch skill match report.",
+    "loadCourses": "Failed to load courses.",
+    "loadTeamsDirectory": "Failed to load teams directory.",
+    "createDepartment": "Failed to create department.",
+    "createTeam": "Failed to create team.",
+    "createLearner": "Failed to create learner.",
+    "createAssignment": "Failed to create assignment.",
+    "saveProgress": "Failed to save progress.",
+    "syncUdemy": "Failed to sync progress from Udemy.",
+    "syncLinkedIn": "Failed to sync progress from LinkedIn Learning.",
+    "updateMandatory": "Failed to update mandatory course flag.",
+    "clearSkillTags": "Failed to clear skill tags.",
+    "enterEmployeeCode": "Enter your employee code to continue.",
+    "employeeCodeNotFound": "Employee code not found.",
+    "loadTeamView": "Failed to load team manager view."
+  }
+}

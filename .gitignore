@@ -1,0 +1,23 @@
+# .NET
+bin/
+obj/
+*.user
+
+# Node / Vite
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Local-only env config (committed template is .env.example)
+lms-tracker-ui/.env
+
+# Claude Code local state (memory, plans, scratch) - not project source
+.claude/
+
+# Editor
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
